@@ -237,7 +237,7 @@ const BuyGiftCard = () => {
                   required
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
-                  placeholder="e.g. John Doe"
+                  placeholder="Gift Card Holder's Name"
                   className="w-full rounded-xl border border-white/10 bg-black py-3 px-4 text-white outline-none focus:border-orange-500/50 transition-colors"
                 />
               </div>
@@ -251,7 +251,7 @@ const BuyGiftCard = () => {
                   required
                   value={recipientEmail}
                   onChange={(e) => setRecipientEmail(e.target.value)}
-                  placeholder="e.g. john@example.com"
+                  placeholder="recipient@email.com"
                   className="w-full rounded-xl border border-white/10 bg-black py-3 px-4 text-white outline-none focus:border-orange-500/50 transition-colors"
                 />
               </div>
@@ -264,7 +264,7 @@ const BuyGiftCard = () => {
                   type="text"
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
-                  placeholder="e.g. Jane Smith"
+                  placeholder="Your Name (optional)"
                   className="w-full rounded-xl border border-white/10 bg-black py-3 px-4 text-white outline-none focus:border-orange-500/50 transition-colors"
                 />
               </div>

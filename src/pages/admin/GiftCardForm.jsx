@@ -18,6 +18,7 @@ const GiftCardForm = () => {
     amount: '',
     status: 'active',
     maxUsage: '',
+    activationDate: '',
     expiryDate: '',
     minCartValue: '',
   });
@@ -33,6 +34,7 @@ const GiftCardForm = () => {
           amount: gc.amount,
           status: gc.status,
           maxUsage: gc.maxUsage || '',
+          activationDate: gc.activationDate ? gc.activationDate.split('T')[0] : '',
           expiryDate: gc.expiryDate ? gc.expiryDate.split('T')[0] : '',
           minCartValue: gc.minCartValue || '',
         });
@@ -57,14 +59,44 @@ const GiftCardForm = () => {
     setFormData({ ...formData, code: result });
   };
 
+  const getTomorrowString = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const getTodayString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    let finalActivationDate = null;
+    if (formData.activationDate) {
+      const [year, month, day] = formData.activationDate.split('-').map(Number);
+      finalActivationDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+    }
+
+    let finalExpiryDate = null;
+    if (formData.expiryDate) {
+      const [year, month, day] = formData.expiryDate.split('-').map(Number);
+      finalExpiryDate = new Date(year, month - 1, day, 23, 59, 59, 999);
+    }
 
     const submitData = {
       ...formData,
       amount: Number(formData.amount),
       maxUsage: formData.maxUsage ? Number(formData.maxUsage) : null,
-      expiryDate: formData.expiryDate ? new Date(formData.expiryDate) : null,
+      activationDate: finalActivationDate,
+      expiryDate: finalExpiryDate,
       minCartValue: formData.minCartValue ? Number(formData.minCartValue) : 0,
     };
 
@@ -182,10 +214,23 @@ const GiftCardForm = () => {
             </div>
 
             <div className="form-group">
+              <label className="mb-2 block text-sm font-bold text-zinc-300">Activation Date (Optional)</label>
+              <input
+                type="date"
+                name="activationDate"
+                min={getTodayString()}
+                value={formData.activationDate}
+                onChange={handleChange}
+                className="w-full rounded-xl border border-slate-700 bg-black py-3 px-4 text-white outline-none focus:bg-[#1a1225]"
+              />
+            </div>
+
+            <div className="form-group">
               <label className="mb-2 block text-sm font-bold text-zinc-300">Expiry Date (Optional)</label>
               <input
                 type="date"
                 name="expiryDate"
+                min={formData.activationDate || getTomorrowString()}
                 value={formData.expiryDate}
                 onChange={handleChange}
                 className="w-full rounded-xl border border-slate-700 bg-black py-3 px-4 text-white outline-none focus:bg-[#1a1225]"

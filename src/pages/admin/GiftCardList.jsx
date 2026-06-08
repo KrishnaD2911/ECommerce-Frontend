@@ -347,6 +347,13 @@ const GiftCardList = () => {
                 </th>
                 <th 
                   className="px-6 py-4 font-bold cursor-pointer group hover:text-white transition-colors"
+                  onClick={() => handleSort('activationDate')}
+                  title="Sort by Activation Date"
+                >
+                  Activation {getSortIcon('activationDate')}
+                </th>
+                <th 
+                  className="px-6 py-4 font-bold cursor-pointer group hover:text-white transition-colors"
                   onClick={() => handleSort('expiryDate')}
                   title="Sort by Expiry Date"
                 >
@@ -359,11 +366,11 @@ const GiftCardList = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="9" className="px-6 py-8 text-center text-zinc-500">Loading gift cards...</td>
+                  <td colSpan="10" className="px-6 py-8 text-center text-zinc-500">Loading gift cards...</td>
                 </tr>
               ) : giftCards.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="px-6 py-8 text-center text-zinc-500">No gift cards found.</td>
+                  <td colSpan="10" className="px-6 py-8 text-center text-zinc-500">No gift cards found.</td>
                 </tr>
               ) : (
                 giftCards.map((card) => (
@@ -444,6 +451,13 @@ const GiftCardList = () => {
                       <span className={`font-bold ${card.balance === 0 ? 'text-red-400' : 'text-green-400'}`}>
                         ₹{card.balance}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 font-medium text-zinc-400">
+                      {card.activationDate ? new Date(card.activationDate).toLocaleDateString('en-IN', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      }) : <span className="text-zinc-600">Now</span>}
                     </td>
                     <td className="px-6 py-4 font-medium text-zinc-400">
                       {card.expiryDate ? new Date(card.expiryDate).toLocaleDateString('en-IN', {

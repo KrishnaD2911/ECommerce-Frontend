@@ -461,7 +461,7 @@ const GiftCardList = () => {
                     </td>
                     <td className="px-6 py-4 font-medium text-zinc-300">₹{card.amount}</td>
                     <td className="px-6 py-4">
-                      {card.isPurchased ? (
+                      {card.balance !== null ? (
                         <span className={`font-bold ${card.balance === 0 ? 'text-red-400' : 'text-green-400'}`}>
                           ₹{card.balance}
                         </span>

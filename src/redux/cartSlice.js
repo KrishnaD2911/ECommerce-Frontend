@@ -53,10 +53,10 @@ const initialItems = storedCart ? JSON.parse(storedCart) : [];
 const calculateTotals = (items, giftCardDiscount = 0) => {
   const totalQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const tax = subtotal * 0.05; // 5% tax
-  const totalBeforeDiscount = subtotal + tax;
-  const discount = Math.min(giftCardDiscount, totalBeforeDiscount);
-  const totalPrice = totalBeforeDiscount - discount;
+  const tax = Math.round(subtotal * 0.05); // 5% tax
+  const totalBeforeDiscount = Math.round(subtotal + tax);
+  const discount = Math.round(Math.min(giftCardDiscount, totalBeforeDiscount));
+  const totalPrice = Math.round(totalBeforeDiscount - discount);
   return { totalQuantity, subtotal, tax, totalPrice, totalBeforeDiscount };
 };
 

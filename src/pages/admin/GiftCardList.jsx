@@ -28,6 +28,7 @@ import {
   HiChevronDown,
   HiChevronUp,
   HiSelector,
+  HiX,
 } from 'react-icons/hi';
 import Pagination from '@mui/material/Pagination';
 import toast from 'react-hot-toast';
@@ -39,6 +40,7 @@ const GiftCardList = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [searchInput, setSearchInput] = useState(filters.search || '');
   const [expandedCardId, setExpandedCardId] = useState(null);
+  const [usageHistoryModal, setUsageHistoryModal] = useState(null);
 
   useEffect(() => {
     dispatch(fetchGiftCardStats());
@@ -386,7 +388,7 @@ const GiftCardList = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-white font-bold">{card.code}</span>
-                        {(card.createdBy || card.recipientName) && (
+                        {(card.createdBy || card.recipientName || (card.usedBy && card.usedBy.length > 0)) && (
                           <button 
                             onClick={() => toggleExpand(card._id)}
                             className="p-1 rounded-md bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
@@ -410,6 +412,17 @@ const GiftCardList = () => {
                               <span className="text-zinc-500 font-bold block mb-0.5">{card.isPurchased ? "Purchased By:" : "Created By:"}</span>
                               <p className="text-zinc-300">{card.createdBy.name}</p>
                               <p className="text-zinc-400">{card.createdBy.email}</p>
+                            </div>
+                          )}
+                          {card.usedBy && card.usedBy.length > 0 && (
+                            <div className="pt-2 mt-2 border-t border-white/5">
+                              <button
+                                onClick={() => setUsageHistoryModal(card)}
+                                className="w-full rounded bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20 py-1.5 px-3 text-xs font-bold transition-colors flex items-center justify-between"
+                              >
+                                <span>Usage History</span>
+                                <span className="bg-orange-500/20 text-orange-400 px-1.5 rounded-full">{card.usedBy.length}</span>
+                              </button>
                             </div>
                           )}
                         </div>
@@ -448,9 +461,13 @@ const GiftCardList = () => {
                     </td>
                     <td className="px-6 py-4 font-medium text-zinc-300">₹{card.amount}</td>
                     <td className="px-6 py-4">
-                      <span className={`font-bold ${card.balance === 0 ? 'text-red-400' : 'text-green-400'}`}>
-                        ₹{card.balance}
-                      </span>
+                      {card.isPurchased ? (
+                        <span className={`font-bold ${card.balance === 0 ? 'text-red-400' : 'text-green-400'}`}>
+                          ₹{card.balance}
+                        </span>
+                      ) : (
+                        <span className="text-zinc-500 font-medium">N/A</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 font-medium text-zinc-400">
                       {card.activationDate ? new Date(card.activationDate).toLocaleDateString('en-IN', {
@@ -515,6 +532,56 @@ const GiftCardList = () => {
           </div>
         )}
       </div>
+
+      {/* Usage History Modal */}
+      {usageHistoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0f0a15] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-white/5">
+              <div>
+                <h3 className="text-xl font-bold text-white font-title">Usage History</h3>
+                <p className="text-sm text-zinc-400 mt-1">
+                  Card: <span className="font-mono text-white font-bold">{usageHistoryModal.code}</span>
+                </p>
+              </div>
+              <button 
+                onClick={() => setUsageHistoryModal(null)}
+                className="p-2 text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <HiX className="text-xl" />
+              </button>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              <div className="space-y-3">
+                {usageHistoryModal.usedBy.map((usage, idx) => (
+                  <div key={idx} className="bg-black/50 border border-white/5 rounded-xl p-4 flex items-center justify-between hover:border-white/10 transition-colors">
+                    <div>
+                      <h4 className="text-sm font-bold text-zinc-200">{usage.user?.name || 'Unknown User'}</h4>
+                      <p className="text-xs text-zinc-500 mt-0.5">{usage.user?.email || 'N/A'}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-black text-orange-400">₹{usage.amountUsed}</p>
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        {new Date(usage.usedAt).toLocaleDateString('en-IN', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

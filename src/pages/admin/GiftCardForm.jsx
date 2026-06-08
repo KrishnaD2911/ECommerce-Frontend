@@ -16,6 +16,7 @@ const GiftCardForm = () => {
   const [formData, setFormData] = useState({
     code: '',
     amount: '',
+    balance: '',
     status: 'active',
     maxUsage: '',
     activationDate: '',
@@ -32,6 +33,7 @@ const GiftCardForm = () => {
         setFormData({
           code: gc.code,
           amount: gc.amount,
+          balance: gc.balance,
           status: gc.status,
           maxUsage: gc.maxUsage || '',
           activationDate: gc.activationDate ? gc.activationDate.split('T')[0] : '',
@@ -94,6 +96,8 @@ const GiftCardForm = () => {
     const submitData = {
       ...formData,
       amount: Number(formData.amount),
+      balance: formData.balance !== '' ? Number(formData.balance) : Number(formData.amount),
+      status: formData.status,
       maxUsage: formData.maxUsage ? Number(formData.maxUsage) : null,
       activationDate: finalActivationDate,
       expiryDate: finalExpiryDate,
@@ -178,10 +182,23 @@ const GiftCardForm = () => {
                 name="amount"
                 required
                 min="0"
-                disabled={isEdit} // Do not allow changing initial amount on edit, only balance can be changed normally, but we didn't add balance field here for simplicity.
+                disabled={isEdit}
                 value={formData.amount}
                 onChange={handleChange}
                 className="w-full rounded-xl border border-slate-700 bg-black py-3 px-4 text-white outline-none focus:bg-[#1a1225] disabled:opacity-50"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="mb-2 block text-sm font-bold text-zinc-300">Balance (₹)</label>
+              <input
+                type="number"
+                name="balance"
+                min="0"
+                placeholder={isEdit ? 'Leave blank to match Initial Amount' : 'Defaults to initial amount'}
+                value={formData.balance}
+                onChange={handleChange}
+                className="w-full rounded-xl border border-slate-700 bg-black py-3 px-4 text-white outline-none focus:bg-[#1a1225]"
               />
             </div>
 

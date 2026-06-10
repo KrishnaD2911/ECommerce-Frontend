@@ -123,6 +123,21 @@ export const fetchMyGiftCards = createAsyncThunk(
   }
 );
 
+export const approveGiftCard = createAsyncThunk(
+  'giftCards/approve',
+  async (id, thunkAPI) => {
+    try {
+      return await giftCardService.approveGiftCard(id);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 const initialState = {
   giftCards: [],
   loading: false,

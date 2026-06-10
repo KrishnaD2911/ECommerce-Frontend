@@ -78,6 +78,12 @@ const getMyGiftCards = async () => {
   return response.data;
 };
 
+// Approve a pending gift card (Admin)
+const approveGiftCard = async (id) => {
+  const response = await api.put(`/${id}/approve`);
+  return response.data;
+};
+
 const giftCardService = {
   createGiftCard,
   getGiftCards,
@@ -89,6 +95,7 @@ const giftCardService = {
   purchaseGiftCard,
   getGiftCardStats,
   getMyGiftCards,
+  approveGiftCard,
 };
 
 export default giftCardService;

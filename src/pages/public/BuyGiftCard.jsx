@@ -65,7 +65,7 @@ const BuyGiftCard = () => {
       ).unwrap();
 
       setPurchasedCard(result.data);
-      toast.success('Gift card purchased successfully!');
+      toast.success('Gift card purchased! Awaiting admin approval.');
     } catch (err) {
       toast.error(err || 'Failed to purchase gift card');
     }
@@ -84,9 +84,9 @@ const BuyGiftCard = () => {
             <HiCheck className="text-5xl" />
           </div>
 
-          <h1 className="font-title text-4xl font-black text-white mb-2">Gift Card Sent! 🎉</h1>
+          <h1 className="font-title text-4xl font-black text-white mb-2">Gift Card Purchased! 🎉</h1>
           <p className="text-zinc-400 font-medium mb-8">
-            A gift card has been created for <span className="text-white font-bold">{purchasedCard.recipientName}</span>.
+            A gift card has been created for <span className="text-white font-bold">{purchasedCard.recipientName}</span>. It is currently <span className="text-amber-400 font-bold">pending admin approval</span> and will be activated shortly.
           </p>
 
           {/* Card Preview */}

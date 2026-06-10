@@ -211,6 +211,7 @@ const GiftCardForm = () => {
                 className="w-full rounded-xl border border-slate-700 bg-black py-3 px-4 text-white outline-none focus:bg-[#1a1225]"
               >
                 <option value="active">Active</option>
+                <option value="pending">Pending</option>
                 <option value="inactive">Inactive</option>
                 <option value="redeemed">Redeemed</option>
                 <option value="expired">Expired</option>

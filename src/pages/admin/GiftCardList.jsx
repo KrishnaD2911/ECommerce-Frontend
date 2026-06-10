@@ -6,6 +6,7 @@ import {
   fetchGiftCardStats,
   deleteGiftCard,
   bulkStatusUpdate,
+  approveGiftCard,
   setGiftCardPage,
   setGiftCardFilters,
   clearGiftCardFilters,
@@ -29,6 +30,7 @@ import {
   HiChevronUp,
   HiSelector,
   HiX,
+  HiOutlineBadgeCheck,
 } from 'react-icons/hi';
 import Pagination from '@mui/material/Pagination';
 import toast from 'react-hot-toast';
@@ -296,6 +298,7 @@ const GiftCardList = () => {
           >
             <option value="">All Statuses</option>
             <option value="active">Active</option>
+            <option value="pending">Pending</option>
             <option value="inactive">Inactive</option>
             <option value="redeemed">Redeemed</option>
             <option value="expired">Expired</option>
@@ -486,6 +489,7 @@ const GiftCardList = () => {
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${
                         card.status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 
+                        card.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
                         card.status === 'inactive' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
                         card.status === 'redeemed' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
                         'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20'
@@ -495,6 +499,21 @@ const GiftCardList = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
+                        {card.status === 'pending' && (
+                          <button
+                            onClick={() => {
+                              dispatch(approveGiftCard(card._id)).then(() => {
+                                toast.success('Gift card approved!');
+                                dispatch(fetchGiftCards(`?page=${page}&search=${filters.search}&status=${filters.status}${filters.sort ? `&sort=${filters.sort}` : ''}${activeTab === 'admin' ? '&isPurchased=false' : activeTab === 'purchased' ? '&isPurchased=true' : ''}`));
+                                dispatch(fetchGiftCardStats());
+                              });
+                            }}
+                            className="rounded-lg p-2 text-green-400 hover:bg-green-500/10 transition-colors"
+                            title="Approve"
+                          >
+                            <HiOutlineBadgeCheck className="text-xl" />
+                          </button>
+                        )}
                         <Link
                           to={`/admin/gift-cards/edit/${card._id}`}
                           className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"

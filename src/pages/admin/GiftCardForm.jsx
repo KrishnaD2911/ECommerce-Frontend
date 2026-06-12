@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { createGiftCard, updateGiftCard } from '../../redux/giftCardSlice';
@@ -12,6 +12,7 @@ const GiftCardForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading } = useSelector((state) => state.giftCards);
+  const maxUsageRef = useRef(null);
 
   const [formData, setFormData] = useState({
     code: '',
@@ -22,6 +23,7 @@ const GiftCardForm = () => {
     activationDate: '',
     expiryDate: '',
     minCartValue: '',
+    usageCount: 0,
   });
 
   const [initialLoading, setInitialLoading] = useState(isEdit);
@@ -39,6 +41,7 @@ const GiftCardForm = () => {
           activationDate: gc.activationDate ? gc.activationDate.split('T')[0] : '',
           expiryDate: gc.expiryDate ? gc.expiryDate.split('T')[0] : '',
           minCartValue: gc.minCartValue || '',
+          usageCount: gc.usageCount || 0,
         });
         setInitialLoading(false);
       }).catch((err) => {
@@ -49,7 +52,39 @@ const GiftCardForm = () => {
   }, [id, isEdit, navigate]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    let updates = { [name]: value };
+
+    if (name === 'status' && formData.status === 'redeemed' && value === 'active') {
+      setTimeout(() => {
+        toast(`Usage limit is currently ${formData.usageCount}. Increase Max Usage to reactivate!`, { icon: '⚠️', duration: 5000 });
+        if (maxUsageRef.current) {
+          maxUsageRef.current.focus();
+          maxUsageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+    } else if (name === 'maxUsage') {
+      const maxVal = value === '' ? null : Number(value);
+      if (maxVal !== null && maxVal <= formData.usageCount) {
+        updates.status = 'redeemed';
+      } else if (maxVal !== null && maxVal > formData.usageCount && formData.status === 'redeemed') {
+        updates.status = 'active';
+      } else if (maxVal === null && formData.status === 'redeemed') {
+        updates.status = 'active';
+      }
+    } else if (name === 'activationDate') {
+      if (value) {
+        const actDate = new Date(value);
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        if (actDate > today) {
+          updates.status = 'inactive';
+        }
+      }
+    }
+
+    setFormData({ ...formData, ...updates });
   };
 
   const generateRandomCode = () => {
@@ -83,14 +118,12 @@ const GiftCardForm = () => {
 
     let finalActivationDate = null;
     if (formData.activationDate) {
-      const [year, month, day] = formData.activationDate.split('-').map(Number);
-      finalActivationDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+      finalActivationDate = new Date(`${formData.activationDate}T00:00:00Z`).toISOString();
     }
 
     let finalExpiryDate = null;
     if (formData.expiryDate) {
-      const [year, month, day] = formData.expiryDate.split('-').map(Number);
-      finalExpiryDate = new Date(year, month - 1, day, 23, 59, 59, 999);
+      finalExpiryDate = new Date(`${formData.expiryDate}T23:59:59Z`).toISOString();
     }
 
     const submitData = {
@@ -103,6 +136,8 @@ const GiftCardForm = () => {
       expiryDate: finalExpiryDate,
       minCartValue: formData.minCartValue ? Number(formData.minCartValue) : 0,
     };
+    // Ensure we don't send usageCount back to backend to override it
+    delete submitData.usageCount;
 
     if (isEdit) {
       // Don't send code on edit to prevent accidental changes, unless explicitly wanted
@@ -219,15 +254,23 @@ const GiftCardForm = () => {
             </div>
 
             <div className="form-group">
-              <label className="mb-2 block text-sm font-bold text-zinc-300">Max Usage (Optional)</label>
+              <label className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-300">
+                Max Usage (Optional)
+                {isEdit && (
+                  <span className="inline-flex items-center rounded-full bg-orange-500/10 px-2 py-0.5 text-xs font-medium text-orange-400 border border-orange-500/20">
+                    Current Usage: {formData.usageCount || 0}
+                  </span>
+                )}
+              </label>
               <input
+                ref={maxUsageRef}
                 type="number"
                 name="maxUsage"
                 min="1"
                 placeholder="Unlimited"
                 value={formData.maxUsage}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-700 bg-black py-3 px-4 text-white outline-none focus:bg-[#1a1225]"
+                className="w-full rounded-xl border border-slate-700 bg-black py-3 px-4 text-white outline-none focus:bg-[#1a1225] focus:ring-2 focus:ring-orange-500"
               />
             </div>
 

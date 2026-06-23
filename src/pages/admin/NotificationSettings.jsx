@@ -109,6 +109,19 @@ const NotificationSettings = () => {
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${getRuleStatus('restock') ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
+
+              <div className="p-6 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-white">Out of Stock Alerts</h3>
+                  <p className="text-xs text-zinc-500 mt-1">Notify admins when a product goes completely out of stock.</p>
+                </div>
+                <button 
+                  onClick={() => toggleRule('out_of_stock', getRuleStatus('out_of_stock'))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${getRuleStatus('out_of_stock') ? 'bg-orange-500' : 'bg-slate-700'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${getRuleStatus('out_of_stock') ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
             </div>
           </div>
         </div>

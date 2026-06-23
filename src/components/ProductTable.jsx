@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { HiPencil, HiTrash, HiRefresh, HiOutlineCube } from 'react-icons/hi';
+import { HiPencil, HiTrash, HiRefresh, HiOutlineCube, HiOutlineDocumentText } from 'react-icons/hi';
 
 const ProductTable = ({
   products,
@@ -126,6 +126,9 @@ const ProductTable = ({
                 <td className="px-5 py-4 text-sm font-medium text-zinc-500">{formatDate(product.createdAt)}</td>
                 <td className="px-5 py-4">
                   <div className="flex justify-end gap-2">
+                    <Link to={`/admin/inventory?search=${product.sku}`} className="action-btn text-purple-400 hover:bg-purple-500/10" title="View Ledger">
+                      <HiOutlineDocumentText />
+                    </Link>
                     <Link to={`/admin/products/edit/${product._id}`} className="action-btn text-blue-400 hover:bg-blue-500/10" title="Edit">
                       <HiPencil />
                     </Link>

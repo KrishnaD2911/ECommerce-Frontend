@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { addProduct, editProduct, fetchProduct, clearProduct, clearError } from '../../redux/productSlice';
-import { HiArrowLeft, HiSave, HiOutlineCube, HiOutlinePhotograph, HiX, HiCheck, HiOutlineCurrencyDollar, HiViewBoards, HiOutlineCurrencyEuro, HiOutlineCurrencyRupee } from 'react-icons/hi';
+import { HiArrowLeft, HiSave, HiOutlineCube, HiOutlinePhotograph, HiX, HiCheck, HiOutlineCurrencyDollar, HiViewBoards, HiOutlineCurrencyEuro, HiOutlineCurrencyRupee, HiOutlineDocumentText } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
 const CATEGORIES = [
@@ -297,8 +297,14 @@ const ProductForm = () => {
               </div>
 
               {/* Pricing & Inventory Section */}
-              <div className="md:col-span-2 mt-4">
-                <h3 className="font-title text-xl font-bold text-white border-b border-white/5 pb-3 mb-6">Pricing & Inventory</h3>
+              <div className="md:col-span-2 mt-4 flex items-center justify-between border-b border-white/5 pb-3 mb-6">
+                <h3 className="font-title text-xl font-bold text-white">Pricing & Inventory</h3>
+                {isEditMode && product?.sku && (
+                  <Link to={`/admin/inventory?search=${product.sku}`} className="inline-flex items-center gap-1.5 text-sm font-bold text-purple-400 hover:text-purple-300 transition-colors bg-purple-500/10 px-3 py-1.5 rounded-lg border border-purple-500/20">
+                    <HiOutlineDocumentText className="text-lg" />
+                    View Stock Ledger
+                  </Link>
+                )}
               </div>
 
               {/* Price */}

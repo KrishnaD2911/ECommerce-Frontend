@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMyOrders, updateOrderStatus } from '../../redux/orderSlice';
 import { fetchMyGiftCards } from '../../redux/giftCardSlice';
@@ -11,6 +11,9 @@ const Profile = () => {
   const { user } = useSelector((state) => state.auth);
   const { orders, loading, error } = useSelector((state) => state.orders);
   const { myGiftCards, myGiftCardsLoading } = useSelector((state) => state.giftCards);
+
+  const [showAllGiftCards, setShowAllGiftCards] = useState(false);
+  const [showAllOrders, setShowAllOrders] = useState(false);
 
   useEffect(() => {
     dispatch(fetchMyOrders());
@@ -73,7 +76,7 @@ const Profile = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {myGiftCards.map(card => {
+                {myGiftCards.slice(0, showAllGiftCards ? myGiftCards.length : 3).map(card => {
                   const isReceived = card.recipientEmail === user?.email;
                   const isSender = card.createdBy === user?._id && card.isPurchased;
                   
@@ -113,6 +116,14 @@ const Profile = () => {
                     </div>
                   );
                 })}
+                {myGiftCards.length > 3 && (
+                  <button
+                    onClick={() => setShowAllGiftCards(!showAllGiftCards)}
+                    className="w-full mt-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-orange-500 text-sm font-bold transition-colors"
+                  >
+                    {showAllGiftCards ? 'Show Less' : `View All (${myGiftCards.length})`}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -140,24 +151,24 @@ const Profile = () => {
               ))}
             </div>
           ) : orders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-[32px] border border-white/5 bg-[#0a0a0a] py-16 text-center shadow-sm">
-              <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-black/50 text-zinc-500">
-                <HiOutlineShoppingBag className="text-4xl" />
+            <div className="rounded-[24px] border border-white/5 bg-[#0a0a0a] p-12 text-center shadow-xl shadow-black/50">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-500">
+                <HiOutlineShoppingBag className="text-3xl" />
               </div>
-              <h3 className="font-title text-2xl font-black text-white">No orders yet</h3>
-              <p className="mt-2 text-zinc-400 font-medium max-w-sm">When you place an order, it will appear here so you can easily track it.</p>
-              <Link to="/" className="btn btn-primary mt-6 px-6">
+              <h3 className="font-title text-xl font-black text-white">No Orders Yet</h3>
+              <p className="mt-2 text-zinc-400">Looks like you haven't made your first purchase.</p>
+              <Link to="/products" className="mt-6 inline-block rounded-xl bg-orange-500 px-6 py-3 font-bold text-black hover:bg-orange-400 transition-colors">
                 Start Shopping
               </Link>
             </div>
           ) : (
             <div className="space-y-6">
-              {orders.map((order) => {
+              {orders.slice(0, showAllOrders ? orders.length : 3).map((order) => {
                 const orderDate = new Date(order.createdAt);
                 const isEligibleForReturn = (new Date() - orderDate) <= 7 * 24 * 60 * 60 * 1000;
                 
                 return (
-                <div key={order._id} className="bg-[#0a0a0a] rounded-[24px] border border-white/5 shadow-sm overflow-hidden">
+                <div key={order._id} className="bg-[#0a0a0a] rounded-[24px] border border-white/5 shadow-xl shadow-black/50 overflow-hidden">
                   {/* Order Header */}
                   <div className="bg-black border-b border-white/5 px-6 py-4 flex flex-wrap justify-between items-center gap-4 text-sm">
                     <div className="flex gap-8">
@@ -241,6 +252,14 @@ const Profile = () => {
                   )}
                 </div>
               )})}
+              {orders.length > 3 && (
+                <button
+                  onClick={() => setShowAllOrders(!showAllOrders)}
+                  className="w-full mt-2 py-4 rounded-[24px] bg-[#0a0a0a] hover:bg-white/5 border border-white/5 text-orange-500 font-bold transition-colors"
+                >
+                  {showAllOrders ? 'Show Less' : `View All Orders (${orders.length})`}
+                </button>
+              )}
             </div>
           )}
         </div>

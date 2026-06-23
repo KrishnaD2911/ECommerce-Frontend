@@ -16,6 +16,7 @@ import {
   HiMenu,
   HiX
 } from 'react-icons/hi';
+import NotificationDropdown from './NotificationDropdown';
 
 const navLinkClass = ({ isActive }) =>
   `inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
@@ -69,6 +70,8 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
+          <NotificationDropdown />
+
           <Link to="/cart" className="relative flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 hover:text-white transition-colors">
             <HiOutlineShoppingCart className="text-xl" />
             {totalQuantity > 0 && (

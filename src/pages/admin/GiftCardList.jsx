@@ -31,6 +31,7 @@ import {
   HiSelector,
   HiX,
   HiOutlineBadgeCheck,
+  HiArrowLeft,
 } from 'react-icons/hi';
 import Pagination from '@mui/material/Pagination';
 import toast from 'react-hot-toast';
@@ -163,9 +164,14 @@ const GiftCardList = () => {
               <HiOutlineCollection />
             </div>
             <div>
-              <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-0.5 text-xs font-black text-orange-500 uppercase tracking-wide">
-                <HiOutlineViewGrid />
-                Management
+              <div className="mb-1">
+                <Link to="/admin" className="mb-10 inline-flex items-center gap-2 rounded-full bg-[#0a0a0a] px-4 py-2 text-sm font-bold text-zinc-300 shadow-sm border border-white/10 transition-all hover:border-orange-500/30 hover:text-orange-500 hover:-translate-y-0.5">
+                  <HiArrowLeft /> Back to Dashboard
+                </Link>
+                <div className="flex items-center gap-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-0.5 text-xs font-black text-orange-500 uppercase tracking-wide w-fit">
+                  <HiOutlineViewGrid />
+                  Management
+                </div>
               </div>
               <h1 className="font-title text-3xl font-black text-white sm:text-4xl">Gift Cards</h1>
               <p className="mt-2 text-sm font-medium text-zinc-400">

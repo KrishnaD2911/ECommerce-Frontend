@@ -8,6 +8,10 @@ import ProductList from './pages/admin/ProductList';
 import ProductForm from './pages/admin/ProductForm';
 import GiftCardList from './pages/admin/GiftCardList';
 import GiftCardForm from './pages/admin/GiftCardForm';
+import InventoryList from './pages/admin/InventoryList';
+import InventoryForm from './pages/admin/InventoryForm';
+import NotificationSettings from './pages/admin/NotificationSettings';
+import NotificationHistory from './pages/admin/NotificationHistory';
 import Login from './pages/public/Login';
 import Register from './pages/public/Register';
 import Cart from './pages/public/Cart';
@@ -54,6 +58,10 @@ function App() {
               <Route path="/admin/gift-cards" element={<GiftCardList />} />
               <Route path="/admin/gift-cards/new" element={<GiftCardForm />} />
               <Route path="/admin/gift-cards/edit/:id" element={<GiftCardForm />} />
+              <Route path="/admin/inventory" element={<InventoryList />} />
+              <Route path="/admin/inventory/new" element={<InventoryForm />} />
+              <Route path="/admin/notifications" element={<NotificationSettings />} />
+              <Route path="/admin/notifications/history" element={<NotificationHistory />} />
             </Route>
           </Routes>
         </main>

@@ -1,7 +1,10 @@
-import { HiOutlineShoppingBag, HiOutlineTag, HiOutlineArchive, HiMinus, HiPlus } from 'react-icons/hi';
+import { useState } from 'react';
+import { HiOutlineShoppingBag, HiOutlineTag, HiOutlineArchive, HiMinus, HiPlus, HiOutlineBell, HiBell } from 'react-icons/hi';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, updateQuantity, removeFromCart } from '../redux/cartSlice';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const CATEGORY_ACCENTS = {
   Electronics: { start: '#f97316', end: '#f59e0b' },
@@ -16,7 +19,10 @@ const CATEGORY_ACCENTS = {
 };
 
 const ProductCard = ({ product }) => {
+  const [isNotified, setIsNotified] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const cartItem = useSelector((state) => state.cart.items.find((item) => item.product === product._id));
   const accent = CATEGORY_ACCENTS[product.category] || CATEGORY_ACCENTS.Other;
   const isUnavailable = product.stock === 0 || product.status !== 'active';
@@ -42,6 +48,24 @@ const ProductCard = ({ product }) => {
     if (stock === 0) return { label: 'Out of stock', className: 'badge badge-error' };
     if (stock <= 5) return { label: `${stock} left`, className: 'badge badge-warning' };
     return { label: 'In stock', className: 'badge badge-success' };
+  };
+
+  const handleNotifyClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isAuthenticated && user?.email) {
+      try {
+        const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
+        await axios.post('/api/v1/restock', { productId: product._id, email: user.email }, config);
+        toast.success('You will be notified when this item is back in stock!');
+        setIsNotified(true);
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Failed to subscribe to notifications');
+      }
+    } else {
+      toast.info('Please enter your email on the product page to be notified.');
+      navigate(`/products/${product._id}?focus=notifyEmail`);
+    }
   };
 
   const stockInfo = getStockStatus(product.stock);
@@ -123,12 +147,29 @@ const ProductCard = ({ product }) => {
                 <HiPlus />
               </button>
             </div>
+          ) : product.stock === 0 ? (
+            <button 
+              className={`btn btn-primary w-full flex justify-center items-center py-2.5 transition-all duration-300 ${
+                isNotified 
+                  ? 'bg-black border border-orange-500 text-orange-500' 
+                  : 'bg-zinc-800 text-white border border-zinc-700 hover:bg-zinc-700 hover:border-zinc-600'
+              }`}
+              onClick={handleNotifyClick}
+              disabled={isNotified}
+            >
+              {isNotified ? (
+                <HiBell className="mr-2 text-xl text-black animate-[ring_1s_ease-in-out]" />
+              ) : (
+                <HiOutlineBell className="mr-2 text-xl text-black" />
+              )}
+              {isNotified ? "You'll be notified" : 'Notify Me'}
+            </button>
           ) : (
             <button 
               className="btn btn-primary w-full flex justify-center items-center py-2.5" 
               disabled={isUnavailable}
               onClick={(e) => {
-                e.preventDefault(); // Prevent navigating if this somehow gets wrapped in a Link in the future
+                e.preventDefault();
                 dispatch(addToCart(product));
               }}
             >

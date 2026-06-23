@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   fetchProducts,
   removeProduct,
@@ -16,14 +16,29 @@ import SearchBar from '../../components/SearchBar';
 import Filters from '../../components/Filters';
 import ProductTable from '../../components/ProductTable';
 import BulkToolbar from '../../components/BulkToolbar';
-import { HiPlus, HiChevronLeft, HiChevronRight, HiOutlineViewGrid, HiOutlineCollection, HiArrowUp, HiArrowDown, HiSelector } from 'react-icons/hi';
+import { HiPlus, HiChevronLeft, HiChevronRight, HiOutlineViewGrid, HiOutlineCollection, HiArrowUp, HiArrowDown, HiSelector, HiOutlineDocumentText, HiArrowLeft } from 'react-icons/hi';
 import Pagination from '@mui/material/Pagination';
 
 const ProductList = () => {
   const dispatch = useDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { products, loading, error, page, pages, filters, totalProducts } = useSelector((state) => state.products);
   const [selectedIds, setSelectedIds] = useState([]);
 
+  // Check URL on initial mount for a search query
+  useEffect(() => {
+    const querySearch = searchParams.get('search');
+    if (querySearch && querySearch !== filters.search) {
+      dispatch(setFilters({ search: querySearch }));
+      // Clean up the URL
+      searchParams.delete('search');
+      setSearchParams(searchParams, { replace: true });
+    } else {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, searchParams, setSearchParams, filters.search]);
+
+  // Refetch when page or filters change
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch, page, filters]);
@@ -113,16 +128,25 @@ const ProductList = () => {
               <HiOutlineCollection />
             </div>
             <div>
-              <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-0.5 text-xs font-black text-orange-500 uppercase tracking-wide">
-                <HiOutlineViewGrid />
-                Inventory
+              <div className="mb-1">
+                <Link to="/admin" className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#0a0a0a] px-4 py-2 text-sm font-bold text-zinc-300 shadow-sm border border-white/10 transition-all hover:border-orange-500/30 hover:text-orange-500 hover:-translate-y-0.5">
+                  <HiArrowLeft /> Back to Dashboard
+                </Link>
+                <div className="flex items-center gap-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-0.5 text-xs font-black text-orange-500 uppercase tracking-wide w-fit">
+                  <HiOutlineViewGrid />
+                  Inventory
+                </div>
               </div>
               <h1 className="font-title text-4xl font-black text-white tracking-tight">Manage Products</h1>
               <p className="mt-1 text-base font-medium text-zinc-500">{totalProducts} products in the current view</p>
             </div>
           </div>
           
-          <div>
+          <div className="flex gap-3">
+            <Link to="/admin/inventory" className="btn bg-[#0a0a0a] border border-white/10 text-zinc-300 hover:border-orange-500/30 hover:text-orange-500 px-6 shadow-sm flex items-center gap-2">
+              <HiOutlineDocumentText className="text-lg" />
+              View Ledger
+            </Link>
             <Link to="/admin/products/new" className="btn btn-primary px-6 shadow-lg shadow-orange-500/20 flex items-center gap-2">
               <HiPlus className="text-lg" />
               Add Product

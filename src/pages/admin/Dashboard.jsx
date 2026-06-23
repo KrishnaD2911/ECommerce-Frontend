@@ -89,11 +89,17 @@ const Dashboard = () => {
             </div>
             
             <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+              <Link to="/admin/inventory" className="btn btn-secondary bg-[#0a0a0a] border border-black/10 text-zinc-300 hover:border-orange-500/30 hover:text-orange-500 shadow-sm px-4 md:px-6">
+                Ledger
+              </Link>
               <Link to="/admin/products" className="btn btn-secondary bg-[#0a0a0a] border border-black/10 text-zinc-300 hover:border-orange-500/30 hover:text-orange-500 shadow-sm px-4 md:px-6">
-                Inventory
+                Products
               </Link>
               <Link to="/admin/gift-cards" className="btn btn-secondary bg-[#0a0a0a] border border-black/10 text-zinc-300 hover:border-orange-500/30 hover:text-orange-500 shadow-sm px-4 md:px-6">
                 Gift Cards
+              </Link>
+              <Link to="/admin/notifications" className="btn btn-secondary bg-[#0a0a0a] border border-black/10 text-zinc-300 hover:border-fuchsia-500/30 hover:text-fuchsia-500 shadow-sm px-4 md:px-6">
+                Notifications
               </Link>
               <Link to="/admin/products/new" className="btn btn-primary bg-orange-500 text-black hover:bg-orange-600 px-4 md:px-6 flex items-center gap-2">
                 <HiPlus className="text-lg" /> Add Product
@@ -112,7 +118,7 @@ const Dashboard = () => {
           <Link to="/admin/products"><StatCard icon={<HiOutlineXCircle />} title="Inactive" value={formatNumber(totals.totalInactive)} accent="zinc" /></Link>
           <Link to="/admin/products"><StatCard icon={<HiOutlineExclamationCircle />} title="Out of Stock" value={formatNumber(totals.outOfStock)} accent="red" alert={totals.outOfStock > 0} /></Link>
           <Link to="/admin/products"><StatCard icon={<HiOutlineChartBar />} title="Avg. Price" value={formatCurrency(totals.avgPrice)} accent="orange" /></Link>
-          <Link to="/admin/products"><StatCard icon={<HiOutlineCurrencyRupee />} title="Inventory Value" value={formatCurrency(totals.totalInventoryValue)} accent="blue" /></Link>
+          <Link to="/admin/inventory"><StatCard icon={<HiOutlineCurrencyRupee />} title="Inventory Value" value={formatCurrency(totals.totalInventoryValue)} accent="blue" /></Link>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

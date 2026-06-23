@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProduct, clearProduct, clearError } from '../../redux/productSlice';
 import { addToCart } from '../../redux/cartSlice';
@@ -13,19 +13,40 @@ import {
   HiOutlineTruck,
   HiOutlineShieldCheck,
   HiOutlineRefresh,
+  HiOutlineBell,
   HiMinus,
   HiPlus,
 } from 'react-icons/hi';
 import { updateQuantity, removeFromCart } from '../../redux/cartSlice';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { product, loading, error } = useSelector((state) => state.products);
   const cartItem = useSelector((state) => 
     state.cart.items.find((item) => item.product === product?._id)
   );
+
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [notifyLoading, setNotifyLoading] = useState(false);
+  const emailInputRef = useRef(null);
+
+  useEffect(() => {
+    if (location.search.includes('focus=notifyEmail') && !loading && product) {
+      // Small timeout to ensure DOM is fully painted and no other layout shifts interrupt scrolling
+      const timer = setTimeout(() => {
+        if (emailInputRef.current) {
+          emailInputRef.current.focus();
+          emailInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [location.search, product, loading]);
 
   useEffect(() => {
     dispatch(fetchProduct(id));
@@ -81,6 +102,22 @@ const ProductDetail = () => {
       dispatch(removeFromCart(product._id));
     } else if (newQuantity <= product.stock) {
       dispatch(updateQuantity({ id: product._id, quantity: newQuantity }));
+    }
+  };
+
+  const handleNotifySubmit = async (e) => {
+    e.preventDefault();
+    setNotifyLoading(true);
+    try {
+      await axios.post('/api/v1/restock', { productId: product._id, email: notifyEmail }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      toast.success('You will be notified when this item is back in stock!');
+      setNotifyEmail('');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to subscribe');
+    } finally {
+      setNotifyLoading(false);
     }
   };
 
@@ -218,21 +255,37 @@ const ProductDetail = () => {
                   <HiPlus />
                 </button>
               </div>
+            ) : product.stock === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-black p-4">
+                <h3 className="mb-2 text-sm font-bold text-white flex items-center gap-2">
+                  <HiOutlineBell className="text-orange-500" /> Notify Me When Available
+                </h3>
+                <form onSubmit={handleNotifySubmit} className="flex gap-2">
+                  <input
+                    ref={emailInputRef}
+                    type="email"
+                    required
+                    placeholder="Enter your email"
+                    value={notifyEmail}
+                    onChange={(e) => setNotifyEmail(e.target.value)}
+                    className="flex-1 rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none focus:border-orange-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={notifyLoading}
+                    className="rounded-xl bg-orange-500 px-6 py-3 text-sm font-bold text-black transition-colors hover:bg-orange-600 disabled:opacity-50"
+                  >
+                    {notifyLoading ? '...' : 'Notify'}
+                  </button>
+                </form>
+              </div>
             ) : (
               <button
                 onClick={handleAddToCart}
                 disabled={isUnavailable}
                 className="btn btn-primary w-full py-4 text-lg rounded-2xl shadow-lg shadow-orange-500/25 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
               >
-                {isUnavailable ? (
-                  <>
-                    <HiOutlineArchive className="text-2xl" /> Unavailable
-                  </>
-                ) : (
-                  <>
-                    <HiOutlineShoppingBag className="text-2xl" /> Add to Cart
-                  </>
-                )}
+                <HiOutlineShoppingBag className="text-2xl" /> Add to Cart
               </button>
             )}
 

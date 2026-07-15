@@ -48,6 +48,11 @@ const BuyGiftCard = () => {
       return;
     }
 
+    if (finalAmount > 10000) {
+      toast.error('Maximum gift card value is ₹10,000');
+      return;
+    }
+
     if (!recipientName.trim() || !recipientEmail.trim()) {
       toast.error('Recipient name and email are required');
       return;

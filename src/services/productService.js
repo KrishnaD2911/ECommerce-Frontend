@@ -57,7 +57,7 @@ api.interceptors.response.use(
  * Get all products (with query params for search, filter, sort, pagination)
  */
 const getProducts = async (query = '') => {
-  const response = await api.get(`/?${query}`);
+  const response = await api.get(`/${query}`);
   return response.data;
 };
 

@@ -19,10 +19,20 @@ const CATEGORY_ACCENTS = {
 };
 
 const ProductCard = ({ product }) => {
-  const [isNotified, setIsNotified] = useState(false);
+  const [isNotified, setIsNotified] = useState(() => {
+    try {
+      const notifiedList = JSON.parse(localStorage.getItem('notifiedProducts') || '[]');
+      const entry = notifiedList.find(n => (n.id || n) === product._id);
+      if (!entry) return false;
+      return entry.outOfStockAt === product.updatedAt;
+    } catch {
+      return false;
+    }
+  });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const { restockRuleActive } = useSelector((state) => state.products);
   const cartItem = useSelector((state) => state.cart.items.find((item) => item.product === product._id));
   const accent = CATEGORY_ACCENTS[product.category] || CATEGORY_ACCENTS.Other;
   const isUnavailable = product.stock === 0 || product.status !== 'active';
@@ -59,6 +69,14 @@ const ProductCard = ({ product }) => {
         await axios.post('/api/v1/restock', { productId: product._id, email: user.email }, config);
         toast.success('You will be notified when this item is back in stock!');
         setIsNotified(true);
+        try {
+          const notifiedList = JSON.parse(localStorage.getItem('notifiedProducts') || '[]');
+          const updatedList = notifiedList.filter(n => (n.id || n) !== product._id);
+          updatedList.push({ id: product._id, outOfStockAt: product.updatedAt });
+          localStorage.setItem('notifiedProducts', JSON.stringify(updatedList));
+        } catch (e) {
+          console.error(e);
+        }
       } catch (err) {
         toast.error(err.response?.data?.message || 'Failed to subscribe to notifications');
       }
@@ -147,7 +165,7 @@ const ProductCard = ({ product }) => {
                 <HiPlus />
               </button>
             </div>
-          ) : product.stock === 0 ? (
+          ) : (product.stock === 0 && restockRuleActive) ? (
             <button 
               className={`btn btn-primary w-full flex justify-center items-center py-2.5 transition-all duration-300 ${
                 isNotified 
@@ -158,7 +176,7 @@ const ProductCard = ({ product }) => {
               disabled={isNotified}
             >
               {isNotified ? (
-                <HiBell className="mr-2 text-xl text-black animate-[ring_1s_ease-in-out]" />
+                <HiBell className="mr-2 text-xl text-black animate-[ring_3s_ease-in-out]" />
               ) : (
                 <HiOutlineBell className="mr-2 text-xl text-black" />
               )}

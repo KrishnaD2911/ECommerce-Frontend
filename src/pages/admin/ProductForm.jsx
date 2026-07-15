@@ -329,6 +329,7 @@ const ProductForm = () => {
               {/* Stock */}
               <div className="form-group relative">
                 <label className="mb-2 block text-sm font-bold text-zinc-300">Stock Quantity *</label>
+                {isEditMode === false ? (
                 <div className="relative">
                   <HiViewBoards className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-xl z-10 pointer-events-none"/> 
                   <input 
@@ -341,6 +342,20 @@ const ProductForm = () => {
                     placeholder="0"
                   />
                 </div>
+                ) : (
+                <div className="disabled relative pointer-events-none">
+                  <HiViewBoards className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-xl z-10 pointer-events-none"/> 
+                  <input 
+                    type="number"
+                    min="0"
+                    name="stock"
+                    onChange={handleChange}
+                    readOnly
+                    className={`form-price text-lg py-3 rounded-xl bg-black pl-12 focus:bg-[#0a0a0a] ${validationErrors.stock ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                    placeholder="Change stock in the Inventory Ledger"
+                  />
+                </div>
+                )}
                 {validationErrors.stock && <p className="mt-2 text-sm font-bold text-red-500">{validationErrors.stock}</p>}
               </div>
 

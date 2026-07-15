@@ -14,6 +14,7 @@ import {
   HiOutlineShieldCheck,
   HiOutlineRefresh,
   HiOutlineBell,
+  HiBell,
   HiMinus,
   HiPlus,
 } from 'react-icons/hi';
@@ -26,14 +27,31 @@ const ProductDetail = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { product, loading, error } = useSelector((state) => state.products);
+  const { product, loading, error, restockRuleActive } = useSelector((state) => state.products);
   const cartItem = useSelector((state) => 
     state.cart.items.find((item) => item.product === product?._id)
   );
 
   const [notifyEmail, setNotifyEmail] = useState('');
   const [notifyLoading, setNotifyLoading] = useState(false);
+  const [isNotified, setIsNotified] = useState(false);
   const emailInputRef = useRef(null);
+
+  useEffect(() => {
+    if (product) {
+      try {
+        const notifiedList = JSON.parse(localStorage.getItem('notifiedProducts') || '[]');
+        const entry = notifiedList.find(n => (n.id || n) === product._id);
+        if (entry && entry.outOfStockAt === product.updatedAt) {
+          setIsNotified(true);
+        } else {
+          setIsNotified(false);
+        }
+      } catch {
+        setIsNotified(false);
+      }
+    }
+  }, [product]);
 
   useEffect(() => {
     if (location.search.includes('focus=notifyEmail') && !loading && product) {
@@ -114,6 +132,13 @@ const ProductDetail = () => {
       });
       toast.success('You will be notified when this item is back in stock!');
       setNotifyEmail('');
+      setIsNotified(true);
+      try {
+        const notifiedList = JSON.parse(localStorage.getItem('notifiedProducts') || '[]');
+        const updatedList = notifiedList.filter(n => (n.id || n) !== product._id);
+        updatedList.push({ id: product._id, outOfStockAt: product.updatedAt });
+        localStorage.setItem('notifiedProducts', JSON.stringify(updatedList));
+      } catch (e) { /* ignore localStorage errors */ }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to subscribe');
     } finally {
@@ -231,10 +256,6 @@ const ProductDetail = () => {
                   {product.status?.replace('_', ' ')}
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/5 bg-[#0a0a0a] p-5">
-                <span className="text-xs font-bold uppercase text-zinc-500">SKU</span>
-                <p className="mt-1 text-lg font-black font-mono text-white">{product.sku}</p>
-              </div>
             </div>
 
             {/* Add to Cart */}
@@ -255,35 +276,53 @@ const ProductDetail = () => {
                   <HiPlus />
                 </button>
               </div>
-            ) : product.stock === 0 ? (
+            ) : (product.stock === 0 && restockRuleActive) ? (
               <div className="rounded-2xl border border-white/10 bg-black p-4">
-                <h3 className="mb-2 text-sm font-bold text-white flex items-center gap-2">
-                  <HiOutlineBell className="text-orange-500" /> Notify Me When Available
-                </h3>
-                <form onSubmit={handleNotifySubmit} className="flex gap-2">
-                  <input
-                    ref={emailInputRef}
-                    type="email"
-                    required
-                    placeholder="Enter your email"
-                    value={notifyEmail}
-                    onChange={(e) => setNotifyEmail(e.target.value)}
-                    className="flex-1 rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none focus:border-orange-500"
-                  />
-                  <button
-                    type="submit"
-                    disabled={notifyLoading}
-                    className="rounded-xl bg-orange-500 px-6 py-3 text-sm font-bold text-black transition-colors hover:bg-orange-600 disabled:opacity-50"
-                  >
-                    {notifyLoading ? '...' : 'Notify'}
-                  </button>
-                </form>
+                {isNotified ? (
+                  <div className="flex flex-col items-center py-4 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/20 text-orange-500 mb-3">
+                      <HiBell className="text-2xl" />
+                    </div>
+                    <h3 className="text-sm font-bold text-white mb-1">You're on the list!</h3>
+                    <p className="text-xs text-zinc-400">We'll email you as soon as it's back.</p>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="mb-2 text-sm font-bold text-white flex items-center gap-2">
+                      <HiOutlineBell className="text-orange-500" /> Notify Me When Available
+                    </h3>
+                    <form onSubmit={handleNotifySubmit} className="flex gap-2">
+                      <input
+                        ref={emailInputRef}
+                        type="email"
+                        required
+                        placeholder="Enter your email"
+                        value={notifyEmail}
+                        onChange={(e) => setNotifyEmail(e.target.value)}
+                        className="flex-1 rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none focus:border-orange-500"
+                      />
+                      <button
+                        type="submit"
+                        disabled={notifyLoading}
+                        className="rounded-xl bg-orange-500 px-6 py-3 text-sm font-bold text-black transition-colors hover:bg-orange-600 disabled:opacity-50"
+                      >
+                        {notifyLoading ? '...' : 'Notify'}
+                      </button>
+                    </form>
+                  </>
+                )}
               </div>
+            ) : isUnavailable ? (
+              <button
+                disabled
+                className="btn w-full py-4 text-lg rounded-2xl flex items-center justify-center gap-3 opacity-50 cursor-not-allowed bg-zinc-800 border border-zinc-700 text-zinc-400"
+              >
+                <HiOutlineArchive className="text-2xl" /> Unavailable
+              </button>
             ) : (
               <button
                 onClick={handleAddToCart}
-                disabled={isUnavailable}
-                className="btn btn-primary w-full py-4 text-lg rounded-2xl shadow-lg shadow-orange-500/25 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                className="btn btn-primary w-full py-4 text-lg rounded-2xl shadow-lg shadow-orange-500/25 flex items-center justify-center gap-3"
               >
                 <HiOutlineShoppingBag className="text-2xl" /> Add to Cart
               </button>

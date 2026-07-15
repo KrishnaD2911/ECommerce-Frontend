@@ -58,7 +58,11 @@ const InventoryForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post('/api/v1/inventory', formData, authHeaders());
+      const payload = {
+        ...formData,
+        quantity: getCalculatedQuantity()
+      };
+      await axios.post('/api/v1/inventory', payload, authHeaders());
       toast.success('Inventory adjustment recorded!');
       navigate('/admin/inventory');
     } catch (err) {
@@ -87,9 +91,16 @@ const InventoryForm = () => {
     p.sku.toLowerCase().includes(productSearch.toLowerCase())
   );
 
+  const getCalculatedQuantity = () => {
+    const rawVal = Number(formData.quantity || 0);
+    if (formData.type === 'return') return Math.abs(rawVal);
+    if (formData.type === 'damaged') return -Math.abs(rawVal);
+    return rawVal;
+  };
+
   const selectedProduct = products.find((p) => p._id === formData.product);
   const previewNewStock = selectedProduct
-    ? selectedProduct.stock + Number(formData.quantity || 0)
+    ? selectedProduct.stock + getCalculatedQuantity()
     : null;
 
   const accentColors = {

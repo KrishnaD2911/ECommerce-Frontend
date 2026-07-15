@@ -12,6 +12,7 @@ const initialState = {
   totalProducts: 0,
   page: 1,
   pages: 1,
+  restockRuleActive: true,
   filters: {
     search: '',
     status: '',
@@ -44,8 +45,9 @@ export const fetchProducts = createAsyncThunk(
       if (filters.dateTo) queryParams.append('dateTo', filters.dateTo);
       if (filters.deleted) queryParams.append('deleted', filters.deleted);
 
-      const data = await productService.getProducts(queryParams.toString());
-      return data;
+      const queryString = queryParams.toString();
+      const response = await productService.getProducts(`?${queryString}`);
+      return response;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -56,8 +58,8 @@ export const fetchProduct = createAsyncThunk(
   'products/fetchProduct',
   async (id, { rejectWithValue }) => {
     try {
-      const data = await productService.getProduct(id);
-      return data.product;
+      const response = await productService.getProduct(id);
+      return response; // return full response { product, restockRuleActive }
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -140,7 +142,7 @@ export const bulkRemoveProducts = createAsyncThunk(
       toast.success(`${ids.length} products deleted`);
       return ids;
     } catch (error) {
-      toast.error(error.message || 'Failed to bulk delete');
+      toast.error(error.message || 'Failed to delete products');
       return rejectWithValue(error.message);
     }
   }
@@ -224,6 +226,9 @@ const productSlice = createSlice({
         state.totalProducts = action.payload.totalProducts;
         state.pages = action.payload.pages;
         state.page = action.payload.page;
+        if (action.payload.restockRuleActive !== undefined) {
+          state.restockRuleActive = action.payload.restockRuleActive;
+        }
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
@@ -237,7 +242,10 @@ const productSlice = createSlice({
       })
       .addCase(fetchProduct.fulfilled, (state, action) => {
         state.loading = false;
-        state.product = action.payload;
+        state.product = action.payload.product || action.payload;
+        if (action.payload.restockRuleActive !== undefined) {
+          state.restockRuleActive = action.payload.restockRuleActive;
+        }
       })
       .addCase(fetchProduct.rejected, (state, action) => {
         state.loading = false;
